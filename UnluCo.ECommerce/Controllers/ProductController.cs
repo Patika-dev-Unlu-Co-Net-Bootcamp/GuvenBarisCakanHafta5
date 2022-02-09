@@ -11,6 +11,7 @@ using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductDetail;
 using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProducts;
 using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductsByCategory;
 using UnluCo.ECommerce.DbOperations;
+using UnluCo.ECommerce.Entities;
 
 
 namespace UnluCo.ECommerce.Controllers
@@ -29,7 +30,7 @@ namespace UnluCo.ECommerce.Controllers
         }
 
         //Bütün Productları listele
-        [Authorize(Roles = "Member")]
+        //[Authorize(Roles = "Member")]
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -39,6 +40,7 @@ namespace UnluCo.ECommerce.Controllers
 
             return Ok(result);
         }
+
         //ProductId ye göre ürünü getirmek için
         [Authorize(Roles = "Member")]
         [HttpGet("{id}")]
@@ -78,8 +80,8 @@ namespace UnluCo.ECommerce.Controllers
 
             return StatusCode((int)HttpStatusCode.Created);
         }
-        //Product Update işlemi için
 
+        //Product Update işlemi için
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public IActionResult Update(int id, [FromBody] UpdateProductModel product)
@@ -120,6 +122,14 @@ namespace UnluCo.ECommerce.Controllers
             command.Handle();
             return Ok();
 
+        }
+
+
+        [HttpGet("query")]
+        public IActionResult GetProducts([FromQuery] QueryParams queryParams)
+        {
+
+            return Ok(_productRepository.GetProducts(queryParams));
         }
     }
 }

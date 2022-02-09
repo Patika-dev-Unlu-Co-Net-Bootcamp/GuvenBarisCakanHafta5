@@ -102,9 +102,9 @@ namespace UnluCo.ECommerce
 
             app.UseRouting();
 
-            app.UseAuthentication();
+            //app.UseAuthentication();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
             //Customer Middleware'larý tanýmladýðýmýz yer araya girmesini istediðimi kýsým.
             app.UseCustomLogMiddle(); // => Log middleware.
