@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Memory;
 using UnluCo.ECommerce.Application.ProductOperations.Command.CreateProduct;
 using UnluCo.ECommerce.Application.ProductOperations.Command.DeleteProduct;
 using UnluCo.ECommerce.Application.ProductOperations.Command.UpdatePatchStatement;
@@ -22,11 +23,13 @@ namespace UnluCo.ECommerce.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepository;
+        private readonly IMemoryCache _memoryCache;
 
-        public ProductController(IMapper mapper, IProductRepository productRepository)
+        public ProductController(IMapper mapper, IProductRepository productRepository, IMemoryCache memoryCache)
         {
             _mapper = mapper;
             _productRepository = productRepository;
+            _memoryCache = memoryCache;
         }
 
         //Bütün Productları listele
@@ -35,15 +38,14 @@ namespace UnluCo.ECommerce.Controllers
         public IActionResult GetAll()
         {
             GetProductsQuery query = new GetProductsQuery(_mapper, _productRepository);
-
-            var result = query.Handle();
-
+            var result= query.Handle();
             return Ok(result);
         }
 
-        //ProductId ye göre ürünü getirmek için
-        [Authorize(Roles = "Member")]
+
+        //ResponseCache kullanılmıştır.
         [HttpGet("{id}")]
+        [ResponseCache(Duration = 60,Location = ResponseCacheLocation.Any)]
         public IActionResult Get(int id)
         {
             GetProductDetailQuery query = new GetProductDetailQuery(_mapper, _productRepository);
@@ -53,14 +55,15 @@ namespace UnluCo.ECommerce.Controllers
             return Ok(query.Handle());
         }
 
-        //CategoryId ye göre ürünleri getirmek için 
-        [Authorize(Roles = "Member")]
+        // Category id ye göre cash leme yapılmıştır. Kullanıcının hangi kategoriyi seçtiği tutulmak istenmiştir
+        //Settings olarak.
         [HttpGet("categoryid/{id}")]
         public IActionResult GetProductByCategoryId(int id)
         {
-            GetProductsByCategoryQuery query = new GetProductsByCategoryQuery(_mapper, _productRepository);
+            GetProductsByCategoryQuery query = new GetProductsByCategoryQuery(_mapper, _productRepository,_memoryCache);
             query.CategoryId = id;
-            return Ok(query.Handle());
+            var result = query.Handle();
+            return Ok(result);
         }
 
         //Yeni Bir Product Oluşturmak için.
@@ -124,7 +127,7 @@ namespace UnluCo.ECommerce.Controllers
 
         }
 
-
+        //[ResponseCache(Duration = 60,Location =ResponseCacheLocation.Any,VaryByQueryKeys = new[] { "search","sort"})]
         [HttpGet("query")]
         public IActionResult GetProducts([FromQuery] QueryParams queryParams)
         {

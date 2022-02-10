@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using Microsoft.Extensions.Caching.Memory;
 using UnluCo.ECommerce.DbOperations;
+using UnluCo.ECommerce.Entities;
 
 
 namespace UnluCo.ECommerce.Application.ProductOperations.Queries.GetProducts
@@ -12,6 +14,7 @@ namespace UnluCo.ECommerce.Application.ProductOperations.Queries.GetProducts
     {
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepository;
+
         public GetProductsQuery(IMapper mapper, IProductRepository productRepository)
         {
             _mapper = mapper;
@@ -20,9 +23,10 @@ namespace UnluCo.ECommerce.Application.ProductOperations.Queries.GetProducts
 
         public List<ProductQueryModel> Handle()
         {
-            var productList = _productRepository.GetAll();
 
-            return _mapper.Map<List<ProductQueryModel>>(productList);
+
+            var productsList = _productRepository.GetAll();
+            return _mapper.Map<List<ProductQueryModel>>(productsList);
         }
 
     }

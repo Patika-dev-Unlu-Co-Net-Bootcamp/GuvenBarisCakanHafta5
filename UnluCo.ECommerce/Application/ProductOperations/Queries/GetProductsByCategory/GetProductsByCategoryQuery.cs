@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Extensions.Caching.Memory;
 using UnluCo.ECommerce.DbOperations;
+using UnluCo.ECommerce.Entities;
 
 namespace UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductsByCategory
 {
@@ -12,22 +15,38 @@ namespace UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductsByCa
     {
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepository;
+        private readonly IMemoryCache _memoryCache;
         public int CategoryId { get; set; }
         
 
-        public GetProductsByCategoryQuery(IMapper mapper, IProductRepository productRepository)
+        public GetProductsByCategoryQuery(IMapper mapper, IProductRepository productRepository, IMemoryCache memoryCache)
         {
             _mapper = mapper;
             _productRepository = productRepository;
+            _memoryCache = memoryCache;
         }
 
         public List<ProductsByCategoryModel> Handle()
         {
-            var productList = _productRepository.GetAll();
-            
-            List<ProductsByCategoryModel> products = _mapper.Map<List<ProductsByCategoryModel>>(productList);
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            var cacheKey = "productByCategoryId";
 
-            return products;
+            if (!_memoryCache.TryGetValue(cacheKey, out List<Product> products))
+            {
+                products = _productRepository.Get(p => p.CategoryId == CategoryId);
+
+                var cacheExpiryOptions = new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpiration = DateTime.Now.AddMinutes(30),
+                    Priority = CacheItemPriority.Normal,
+                    SlidingExpiration = TimeSpan.FromSeconds(20)
+                };
+                _memoryCache.Set(cacheKey, products, cacheExpiryOptions);
+            }
+            watch.Stop();
+            Console.WriteLine(watch.ElapsedMilliseconds);
+            return _mapper.Map<List<ProductsByCategoryModel>>(products);
         }
     }
 
@@ -35,7 +54,7 @@ namespace UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductsByCa
     {
         public string ProductName { get; set; }
         public decimal UnitPrice { get; set; }
-        public string Category { get; set; }
+        public Category Category { get; set; }
         public int StockAmount { get; set; }
         public DateTime ProductAddedTime { get; set; }
     }

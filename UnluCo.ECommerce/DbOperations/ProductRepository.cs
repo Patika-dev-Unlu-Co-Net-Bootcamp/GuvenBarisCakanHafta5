@@ -31,14 +31,12 @@ namespace UnluCo.ECommerce.DbOperations
 
         public List<Product> Get(Expression<Func<Product, bool>> filter)
         {
-            return _context.Products.Where(filter).ToList();
+            return _context.Products.Include(c=>c.Category).Where(filter).ToList();
         }
 
         public List<Product> GetProducts(QueryParams queryParams)
         {
-            var entity = typeof(QueryParams);
-            var property = entity.GetProperty(queryParams.Sort);
-
+           
             if (queryParams.SortingDirection == SortingDirection.Asc)
             {
                 if (string.IsNullOrWhiteSpace(queryParams.Search))
@@ -51,10 +49,12 @@ namespace UnluCo.ECommerce.DbOperations
 
             if (string.IsNullOrWhiteSpace(queryParams.Search))
             {
-                return _context.Products.OrderByDescending(x => property.GetValue(x, null)).ToList();
-            }
+                Console.WriteLine(queryParams.Sort);
+                return _context.Products.OrderByDescending(x => queryParams.Sort).ToList();
 
-            return _context.Products.OrderByDescending(x => property.GetValue(x, null)).SearchByName(queryParams.Search);
+            }
+            var result = _context.Products.OrderByDescending(p=>queryParams.Sort).SearchByName(queryParams.Search).ToList();
+            return result;
 
         }
 

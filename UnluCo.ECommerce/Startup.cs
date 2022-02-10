@@ -86,6 +86,9 @@ namespace UnluCo.ECommerce
             );
 
             services.AddScoped<TokenGenarator>();
+            services.AddMemoryCache();
+            services.AddResponseCaching();
+
         }
 
 
@@ -101,13 +104,17 @@ namespace UnluCo.ECommerce
             }
 
             app.UseRouting();
-
+            
             //app.UseAuthentication();
 
             //app.UseAuthorization();
 
+            app.UseResponseCaching();
+
             //Customer Middleware'larý tanýmladýðýmýz yer araya girmesini istediðimi kýsým.
             app.UseCustomLogMiddle(); // => Log middleware.
+
+  
 
             //app.UseCustomeExceptionMiddle();// Exception middleware.
 
