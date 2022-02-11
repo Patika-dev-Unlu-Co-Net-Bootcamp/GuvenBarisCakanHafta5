@@ -1,10 +1,8 @@
-# 4. hafta
+# 5. hafta
 
 Restful api oluşturun
 - Daha önce oluşturduğunuz apilerden birini kullanın
-- kullanıcı işlemleri için Asp.NET Core Identity altyapısını kullanın
-- api de yetkilendirme işlemleri için JWT kullanın
-- bir tane result filter oluşturun ve her response da header a verinin oluşturulma/getirilme tarihi saati yazılsın
-
-# bonus
-- rol bazlı yapı tanımlayın
+- tek bir endpoint ten arama, filtreleme ve sıralama işlemlerini yaptırın.
+- apiye ait basit ayarları in memory cache de tutan ve kullanımını sağlayan bir yapı geliştirin
+- endpointlerinizden en az birinde response cache mekanizmasını kullanın
+- distributed cache olarak redis e yazan ve okuyan bir cache yönetim servisi yazın. sorgu adedi 100 ve üzeri olursa istenilen zaman aralığında cache yazsın ve okusun
