@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using UnluCo.ECommerce.Application.ProductOperations.Command.CreateProduct;
 using UnluCo.ECommerce.Application.ProductOperations.Command.DeleteProduct;
@@ -24,32 +25,37 @@ namespace UnluCo.ECommerce.Controllers
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepository;
         private readonly IMemoryCache _memoryCache;
+        private readonly IDistributedCache _distributedCache;
 
-        public ProductController(IMapper mapper, IProductRepository productRepository, IMemoryCache memoryCache)
+        public ProductController(IMapper mapper, IProductRepository productRepository, IMemoryCache memoryCache, IDistributedCache distributedCache)
         {
             _mapper = mapper;
             _productRepository = productRepository;
             _memoryCache = memoryCache;
+            _distributedCache = distributedCache;
         }
 
         //Bütün Productları listele
         //[Authorize(Roles = "Member")]
+        //Redis ile Distributed Cache uygulanmıştır.
         [HttpGet]
-        public IActionResult GetAll()
+        public   IActionResult GetAll()
         {
-            GetProductsQuery query = new GetProductsQuery(_mapper, _productRepository);
-            var result= query.Handle();
+            GetProductsQuery query = new GetProductsQuery(_mapper, _productRepository,_distributedCache);
+            var result = query.Handle();
             return Ok(result);
-        }
 
+        }
 
         //ResponseCache kullanılmıştır.
         [HttpGet("{id}")]
         [ResponseCache(Duration = 60,Location = ResponseCacheLocation.Any)]
         public IActionResult Get(int id)
         {
-            GetProductDetailQuery query = new GetProductDetailQuery(_mapper, _productRepository);
-            query.ProductId = id;
+            GetProductDetailQuery query = new(_mapper, _productRepository)
+            {
+                ProductId = id
+            };
             //GetProductDetailQueryValidator validator = new GetProductDetailQueryValidator();
             //validator.Validate(query);
             return Ok(query.Handle());
@@ -107,9 +113,11 @@ namespace UnluCo.ECommerce.Controllers
         public IActionResult UpdateStatement(int id, [FromBody] bool statement)
         {
 
-            UpdatePatchCommand command = new UpdatePatchCommand(_productRepository);
-            command.ProductId = id;
-            command.Statement = statement;
+            UpdatePatchCommand command = new(_productRepository)
+            {
+                ProductId = id,
+                Statement = statement
+            };
             command.Handle();
             return Ok();
         }
@@ -127,7 +135,7 @@ namespace UnluCo.ECommerce.Controllers
 
         }
 
-        //[ResponseCache(Duration = 60,Location =ResponseCacheLocation.Any,VaryByQueryKeys = new[] { "search","sort"})]
+        [ResponseCache(Duration = 60,Location =ResponseCacheLocation.Any,VaryByQueryKeys = new[] { "search"})]
         [HttpGet("query")]
         public IActionResult GetProducts([FromQuery] QueryParams queryParams)
         {

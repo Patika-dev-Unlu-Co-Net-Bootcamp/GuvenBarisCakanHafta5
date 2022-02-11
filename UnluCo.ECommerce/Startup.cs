@@ -88,6 +88,7 @@ namespace UnluCo.ECommerce
             services.AddScoped<TokenGenarator>();
             services.AddMemoryCache();
             services.AddResponseCaching();
+            services.AddStackExchangeRedisCache(options => options.Configuration = "localhost:6000");
 
         }
 
@@ -114,14 +115,13 @@ namespace UnluCo.ECommerce
             //Customer Middleware'larý tanýmladýðýmýz yer araya girmesini istediðimi kýsým.
             app.UseCustomLogMiddle(); // => Log middleware.
 
-  
-
             //app.UseCustomeExceptionMiddle();// Exception middleware.
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
             CreateRoles(serviceProvider);
         }
 
