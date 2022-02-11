@@ -43,7 +43,8 @@ namespace UnluCo.ECommerce.DbOperations
                 {
                     return _context.Products.OrderBy(queryParams.Sort).ToList();
                 }
-                return  _context.Products.OrderBy(queryParams.Sort).SearchByName(queryParams.Search);
+
+                return _context.Products.OrderBy(queryParams.Sort).SearchByName(queryParams.Search).ToList();
             }
 
 

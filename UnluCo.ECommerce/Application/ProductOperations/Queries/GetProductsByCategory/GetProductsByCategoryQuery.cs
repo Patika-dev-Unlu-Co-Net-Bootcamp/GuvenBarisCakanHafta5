@@ -28,8 +28,6 @@ namespace UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductsByCa
 
         public List<ProductsByCategoryModel> Handle()
         {
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
             var cacheKey = "productByCategoryId";
 
             if (!_memoryCache.TryGetValue(cacheKey, out List<Product> products))
@@ -44,8 +42,7 @@ namespace UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductsByCa
                 };
                 _memoryCache.Set(cacheKey, products, cacheExpiryOptions);
             }
-            watch.Stop();
-            Console.WriteLine(watch.ElapsedMilliseconds);
+
             return _mapper.Map<List<ProductsByCategoryModel>>(products);
         }
     }

@@ -4,6 +4,7 @@ using UnluCo.ECommerce.Application.ProductOperations.Command.UpdateProduct;
 using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductDetail;
 using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProducts;
 using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductsByCategory;
+using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductsFilter;
 using UnluCo.ECommerce.DbOperations;
 using UnluCo.ECommerce.Entities;
 
@@ -16,13 +17,12 @@ namespace UnluCo.ECommerce.Common
         public MappingProfile()
         {
             CreateMap<CreateProductModel, Product>();
-            CreateMap<Product, ProductsByCategoryModel>();
             CreateMap<UpdateProductModel, Product>();
+
             CreateMap<Product, ProductQueryModel>();
             CreateMap<Product, ProductDetailQueryModel>();
-
-            //Manuel mapleme işlemi yaptık. O yüzden alttaki kısımları çıkarttık.
-            //CreateMap<Product, ProductDetailQueryModel>();
+            CreateMap<Product, ProductsByCategoryModel>();
+            CreateMap<Product, ProductFilterModel>();
         }
     }
 }

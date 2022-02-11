@@ -12,6 +12,7 @@ using UnluCo.ECommerce.Application.ProductOperations.Command.UpdateProduct;
 using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductDetail;
 using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProducts;
 using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductsByCategory;
+using UnluCo.ECommerce.Application.ProductOperations.Queries.GetProductsFilter;
 using UnluCo.ECommerce.DbOperations;
 using UnluCo.ECommerce.Entities;
 
@@ -52,7 +53,7 @@ namespace UnluCo.ECommerce.Controllers
         [ResponseCache(Duration = 60,Location = ResponseCacheLocation.Any)]
         public IActionResult Get(int id)
         {
-            GetProductDetailQuery query = new(_mapper, _productRepository)
+            GetProductDetailQuery query = new(_mapper, _productRepository,_memoryCache)
             {
                 ProductId = id
             };
@@ -135,12 +136,17 @@ namespace UnluCo.ECommerce.Controllers
 
         }
 
-        [ResponseCache(Duration = 60,Location =ResponseCacheLocation.Any,VaryByQueryKeys = new[] { "search"})]
+        //[ResponseCache(Duration = 60,Location =ResponseCacheLocation.Any,VaryByQueryKeys = new[] { "search"})]
         [HttpGet("query")]
         public IActionResult GetProducts([FromQuery] QueryParams queryParams)
         {
 
-            return Ok(_productRepository.GetProducts(queryParams));
+            GetProductsFilterQuery filterQuery = new(_mapper, _distributedCache, _productRepository)
+                {
+                    Params = queryParams
+                };
+
+            return Ok(filterQuery.Handle());
         }
     }
 }
